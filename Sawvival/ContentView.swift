@@ -13,9 +13,22 @@ struct ContentView: View {
     @State private var showingShareSheet = false
     @State private var showingResult = false
     
+    // Add timer to update every second
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
     var questionText: String {
         guard let question = gameManager.currentQuestion else { return "Start a new game!" }
         return "\(question.firstNumber) \(question.operation) \(question.secondNumber) = ?"
+    }
+    
+    var timeRemaining: String {
+        guard let deadline = gameManager.deadline else { return "" }
+        let diff = Calendar.current.dateComponents([.minute, .second], from: Date(), to: deadline)
+        let totalSeconds = (diff.minute ?? 0) * 60 + (diff.second ?? 0)
+        if totalSeconds <= 0 {
+            return "Time's up!"
+        }
+        return String(format: "%02d:%02d remaining", diff.minute ?? 0, diff.second ?? 0)
     }
     
     var body: some View {
@@ -24,7 +37,24 @@ struct ContentView: View {
                 .font(.largeTitle)
                 .bold()
             
-            if gameManager.gameState == .waiting {
+            if let deadline = gameManager.deadline,
+               !gameManager.isChallenger {
+                Text(timeRemaining)
+                    .font(.headline)
+                    .foregroundColor(gameManager.hasExpired ? .white : .blue)
+                    .padding()
+                    .background(gameManager.hasExpired ? Color.red : Color.clear)
+                    .cornerRadius(8)
+            }
+            
+            if gameManager.gameState == .expired {
+                Text("You lost! Time expired!")
+                    .font(.title)
+                    .foregroundColor(.red)
+                    .padding()
+                    .background(Color.red.opacity(0.2))
+                    .cornerRadius(8)
+            } else if gameManager.gameState == .waiting {
                 Button("Start New Game") {
                     gameManager.startNewGame()
                 }
@@ -73,9 +103,15 @@ struct ContentView: View {
             }
         }
         .padding()
+        .onReceive(timer) { _ in
+            if !gameManager.isChallenger {
+                gameManager.checkExpiration()
+            }
+        }
         .sheet(isPresented: $showingShareSheet) {
-            if let question = gameManager.currentQuestion {
-                let shareURL = "sawvival://question?first=\(question.firstNumber)&second=\(question.secondNumber)&operation=\(question.operation)"
+            if let question = gameManager.currentQuestion,
+               let deadline = gameManager.deadline {
+                let shareURL = "sawvival://question?first=\(question.firstNumber)&second=\(question.secondNumber)&operation=\(question.operation)&deadline=\(deadline.timeIntervalSince1970)"
                 ShareSheet(activityItems: [shareURL])
             }
         }

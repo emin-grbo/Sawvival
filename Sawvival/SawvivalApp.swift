@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 
 @main
 struct SawvivalApp: App {
@@ -22,15 +23,20 @@ struct SawvivalApp: App {
                           let first = queryItems.first(where: { $0.name == "first" })?.value,
                           let second = queryItems.first(where: { $0.name == "second" })?.value,
                           let operation = queryItems.first(where: { $0.name == "operation" })?.value,
+                          let deadlineStr = queryItems.first(where: { $0.name == "deadline" })?.value,
                           let firstNum = Int(first),
-                          let secondNum = Int(second) else {
+                          let secondNum = Int(second),
+                          let deadlineTimeInterval = Double(deadlineStr) else {
                         return
                     }
+                  let deadline = Date(timeIntervalSince1970: deadlineTimeInterval)
                     
-                    gameManager.handleSharedQuestion(first: firstNum, 
-                                                    second: secondNum, 
-                                                    operation: operation)
+                    gameManager.handleSharedQuestion(first: firstNum,
+                                                    second: secondNum,
+                                                    operation: operation,
+                                                    deadline: deadline)
                 }
         }
     }
 }
+

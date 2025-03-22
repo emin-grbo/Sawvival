@@ -6,11 +6,14 @@ class GameManager: ObservableObject {
     @Published var opponentScore: Int = 0
     @Published var isChallenger: Bool = true
     @Published var gameState: GameState = .waiting
+    @Published var deadline: Date? = nil
+    @Published var hasExpired: Bool = false
     
     enum GameState {
         case waiting
         case playing
         case completed
+        case expired
     }
     
     func startNewGame() {
@@ -19,9 +22,10 @@ class GameManager: ObservableObject {
         opponentScore = 0
         isChallenger = true
         gameState = .playing
+        deadline = Calendar.current.date(byAdding: .minute, value: 1, to: Date())
     }
     
-    func handleSharedQuestion(first: Int, second: Int, operation: String) {
+    func handleSharedQuestion(first: Int, second: Int, operation: String, deadline: Date) {
         isChallenger = false
         let answer: Int
         switch operation {
@@ -31,11 +35,21 @@ class GameManager: ObservableObject {
         default: answer = 0
         }
         
-        currentQuestion = MathQuestion(firstNumber: first, 
-                                      secondNumber: second, 
-                                      operation: operation, 
+        self.deadline = deadline
+        currentQuestion = MathQuestion(firstNumber: first,
+                                      secondNumber: second,
+                                      operation: operation,
                                       correctAnswer: answer)
         gameState = .playing
+    }
+    
+    func checkExpiration() {
+        guard let deadline = deadline else { return }
+        if Date() > deadline {
+            hasExpired = true
+            gameState = .expired
+            opponentScore = 0  // Opponent loses if time expires
+        }
     }
     
     func submitAnswer(_ answer: Int) -> Bool {
@@ -52,4 +66,3 @@ class GameManager: ObservableObject {
         return isCorrect
     }
 }
-
