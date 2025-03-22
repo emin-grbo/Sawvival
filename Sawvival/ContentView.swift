@@ -7,6 +7,7 @@ struct ContentView: View {
     @State private var showingResult = false
     @State private var currentTime = Date()
     @State private var progress: Double = 0
+    @FocusState private var isAnswerFocused
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
@@ -32,17 +33,17 @@ struct ContentView: View {
         return max(0, min(1, (totalTime - remainingTime) / totalTime))
     }
     
+    func clearAndDismiss() {
+        userAnswer = ""
+        isAnswerFocused = false
+    }
+    
     var body: some View {
         ZStack {
             VStack(spacing: 20) {
-              if isAnswering() {
-                Image("guy")
-                Spacer()
-              } else {
                 Text("Math Quiz")
-                  .font(.largeTitle)
-                  .bold()
-              }
+                    .font(.largeTitle)
+                    .bold()
                 
                 if let deadline = gameManager.deadline,
                    !gameManager.isChallenger {
@@ -52,7 +53,7 @@ struct ContentView: View {
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                            .fill(gameManager.hasExpired ? Color.red : Color.blue.opacity(0.2))
+                                .fill(gameManager.hasExpired ? Color.red : Color.blue.opacity(0.2))
                         )
                 }
                 
@@ -79,9 +80,14 @@ struct ContentView: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .keyboardType(.numberPad)
                         .frame(width: 200)
+                        .focused($isAnswerFocused)
+                        .onSubmit {
+                            clearAndDismiss()
+                        }
                     
                     Button("Submit Answer") {
                         if let answer = Int(userAnswer) {
+                            clearAndDismiss()
                             showingResult = true
                             _ = gameManager.submitAnswer(answer)
                         }
@@ -94,18 +100,20 @@ struct ContentView: View {
                                 showingShareSheet = true
                             }
                             .buttonStyle(.bordered)
-                        } else if gameManager.gameState == .completed {
+                        } else {
                             VStack {
-                                Text("Results:")
-                                Text("Challenger: \(gameManager.challengerScore)")
-                                Text("You: \(gameManager.opponentScore)")
-                                
-                                Button("Start New Game") {
-                                    gameManager.startNewGame()
-                                    showingResult = false
-                                    userAnswer = ""
+                                if gameManager.gameState == .completed {
+                                    Text("Game Over!")
+                                        .font(.title)
+                                    Text("Final Score:")
+                                    Text("Challenger: \(gameManager.challengerScore)")
+                                    Text("Opponent: \(gameManager.opponentScore)")
+                                    Button("Share Back") {
+                                        showingShareSheet = true
+                                    }
+                                    .buttonStyle(.bordered)
+                                    .padding()
                                 }
-                                .buttonStyle(.bordered)
                             }
                         }
                     }
@@ -121,6 +129,9 @@ struct ContentView: View {
             }
         }
         .padding()
+        .onAppear {
+            clearAndDismiss()
+        }
         .onReceive(timer) { time in
             currentTime = time
             withAnimation(.linear(duration: 0.5)) {
@@ -131,16 +142,20 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $showingShareSheet) {
-            if let question = gameManager.currentQuestion,
-               let deadline = gameManager.deadline {
-                let shareURL = "sawvival://question?first=\(question.firstNumber)&second=\(question.secondNumber)&operation=\(question.operation)&deadline=\(deadline.timeIntervalSince1970)"
-                ShareSheet(activityItems: [shareURL])
+            if let question = gameManager.currentQuestion {
+              let shareMessage: String = constructShareMessage(for: question)
+                ShareSheet(activityItems: [shareMessage])
             }
         }
     }
   
-  func isAnswering() -> Bool {
-    return !gameManager.isChallenger
+  func constructShareMessage(for question: MathQuestion) -> String {
+    if !gameManager.isChallenger {
+        return "I answered \(gameManager.lastAnswerCorrect ? "correctly" : "incorrectly") to your math problem!"
+    } else {
+        let urlString = "sawvival://question?first=\(question.firstNumber)&second=\(question.secondNumber)&operation=\(question.operation)&deadline=\(Date().addingTimeInterval(60).timeIntervalSince1970)"
+        return "Can you solve this math problem?\n\(question.firstNumber) \(question.operation) \(question.secondNumber) = ?\n\nTry it here: \(urlString)"
+    }
   }
 }
 
@@ -148,7 +163,18 @@ struct ShareSheet: UIViewControllerRepresentable {
     let activityItems: [Any]
     
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+        let url = activityItems[0] as! String
+        let controller = UIActivityViewController(
+            activityItems: [url],
+            applicationActivities: nil
+        )
+        controller.excludedActivityTypes = [
+            .assignToContact,
+            .addToReadingList,
+            .saveToCameraRoll,
+            .print
+        ]
+        return controller
     }
     
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
