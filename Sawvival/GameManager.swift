@@ -9,12 +9,15 @@ class GameManager: ObservableObject {
     @Published var deadline: Date? = nil
     @Published var hasExpired: Bool = false
     @Published var lastAnswerCorrect: Bool = false
+    @Published var viewingResult: Bool = false
+    @Published var challengerCorrect: Bool = false
     
     enum GameState {
         case waiting
         case playing
         case completed
         case expired
+        case viewingResult
     }
     
     func startNewGame() {
@@ -23,10 +26,12 @@ class GameManager: ObservableObject {
         opponentScore = 0
         isChallenger = true
         gameState = .playing
-//        roundStartTime = Date()
+        viewingResult = false
+        deadline = nil
+        hasExpired = false
     }
     
-    func handleSharedQuestion(first: Int, second: Int, operation: String, deadline: Date) {
+    func handleSharedQuestion(first: Int, second: Int, operation: String, deadline: Date, challengerWasCorrect: Bool) {
         isChallenger = false
         let answer: Int
         switch operation {
@@ -37,9 +42,10 @@ class GameManager: ObservableObject {
         }
         
         self.deadline = deadline
-        currentQuestion = MathQuestion(firstNumber: first, 
-                                      secondNumber: second, 
-                                      operation: operation, 
+        challengerCorrect = challengerWasCorrect
+        currentQuestion = MathQuestion(firstNumber: first,
+                                      secondNumber: second,
+                                      operation: operation,
                                       correctAnswer: answer)
         gameState = .playing
     }
@@ -66,5 +72,16 @@ class GameManager: ObservableObject {
             gameState = .expired
             opponentScore = 0
         }
+    }
+    
+    func showResult(question: MathQuestion, wasCorrect: Bool, challengerWasCorrect: Bool) {
+        currentQuestion = question
+        lastAnswerCorrect = wasCorrect
+        challengerCorrect = challengerWasCorrect
+        viewingResult = true
+        gameState = .viewingResult
+        deadline = nil
+        hasExpired = false
+        isChallenger = true
     }
 }
