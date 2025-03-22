@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		2363E1782D8F125E0063ED7D /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 2363E1772D8F125E0063ED7D /* Lottie */; };
+		2363E17A2D8F12A80063ED7D /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2363E1792D8F12A80063ED7D /* LottieView.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		2363E1542D8EB91C0063ED7D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +32,7 @@
 		2363E1462D8EB91B0063ED7D /* Sawvival.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sawvival.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2363E1532D8EB91C0063ED7D /* SawvivalTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SawvivalTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2363E15D2D8EB91C0063ED7D /* SawvivalUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SawvivalUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2363E1792D8F12A80063ED7D /* LottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -65,6 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2363E1782D8F125E0063ED7D /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -88,6 +95,7 @@
 		2363E13D2D8EB91B0063ED7D = {
 			isa = PBXGroup;
 			children = (
+				2363E1792D8F12A80063ED7D /* LottieView.swift */,
 				2363E1482D8EB91B0063ED7D /* Sawvival */,
 				2363E1562D8EB91C0063ED7D /* SawvivalTests */,
 				2363E1602D8EB91C0063ED7D /* SawvivalUITests */,
@@ -125,6 +133,7 @@
 			);
 			name = Sawvival;
 			packageProductDependencies = (
+				2363E1772D8F125E0063ED7D /* Lottie */,
 			);
 			productName = Sawvival;
 			productReference = 2363E1462D8EB91B0063ED7D /* Sawvival.app */;
@@ -208,6 +217,9 @@
 			);
 			mainGroup = 2363E13D2D8EB91B0063ED7D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				2363E1762D8F125E0063ED7D /* XCRemoteSwiftPackageReference "lottie-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2363E1472D8EB91B0063ED7D /* Products */;
 			projectDirPath = "";
@@ -249,6 +261,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2363E17A2D8F12A80063ED7D /* LottieView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -575,6 +588,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		2363E1762D8F125E0063ED7D /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		2363E1772D8F125E0063ED7D /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2363E1762D8F125E0063ED7D /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 2363E13E2D8EB91B0063ED7D /* Project object */;
 }

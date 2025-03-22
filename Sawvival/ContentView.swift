@@ -85,7 +85,7 @@ struct ContentView: View {
           }
           .padding()
         } else if let deadline = gameManager.deadline,
-                  !gameManager.isChallenger {
+                  !gameManager.isChallenger && !(gameManager.gameState == .completed) {
           Text(timeRemaining)
             .font(.headline)
             .foregroundColor(gameManager.hasExpired ? .white : .blue)
@@ -165,9 +165,8 @@ struct ContentView: View {
       }
       
       if !gameManager.isChallenger {
-        Image(systemName: "hourglass")
-          .font(.system(size: 40))
-          .foregroundColor(.red)
+        LottieView(name: "saw", loopMode: .loop, fromProgress: 0, toProgress: progress)
+          .frame(width: 150, height: 150)
           .offset(y: 300 * (1 - progress) - 150)
           .opacity(0.8)
       }
