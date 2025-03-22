@@ -15,6 +15,7 @@ struct SawvivalApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+            .preferredColorScheme(.light)
                 .environmentObject(gameManager)
                 .onOpenURL { url in
                     guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true),

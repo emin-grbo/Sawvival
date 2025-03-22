@@ -48,9 +48,20 @@ struct ContentView: View {
   var body: some View {
     ZStack {
       VStack(spacing: 20) {
-        Text("Math Quiz")
-          .font(.largeTitle)
-          .bold()
+        if !gameManager.isChallenger && gameManager.gameState != .waiting {
+          Image("guy")
+            .resizable()
+            .scaledToFit()
+            .frame(height: 200)
+            .padding(.top, -20)
+          Spacer()
+        }
+        
+        if gameManager.gameState == .waiting || gameManager.isChallenger {
+          Text("Math Quiz")
+            .font(.largeTitle)
+            .bold()
+        }
         
         if gameManager.viewingResult,
            let question = gameManager.currentQuestion {
@@ -59,9 +70,12 @@ struct ContentView: View {
               .font(.title2)
             
             VStack(spacing: 10) {
-              Text("Initial player: \(gameManager.challengerCorrect ? "Correct " : "Wrong ")")
+              Text("Your Friend: \(gameManager.challengerCorrect ? "Correct " : "Wrong ")")
+                .foregroundColor(gameManager.challengerCorrect ? .green : .red)
               Text("Your answer: \(gameManager.lastAnswerCorrect ? "Correct " : "Wrong ")")
+                .foregroundColor(gameManager.lastAnswerCorrect ? .green : .red)
             }
+            .bold()
             .padding()
             
             Button("Try Again") {
@@ -94,30 +108,32 @@ struct ContentView: View {
             gameManager.startNewGame()
           }
           .buttonStyle(.borderedProminent)
-        } else {
+        } else if !gameManager.viewingResult {
           Text(gameManager.isChallenger ? "You're the challenger!" : "Solve your friend's challenge!")
             .font(.headline)
           
           Text(questionText)
             .font(.title)
           
-          TextField("Your answer", text: $userAnswer)
-            .textFieldStyle(RoundedBorderTextFieldStyle())
-            .keyboardType(.numberPad)
-            .frame(width: 200)
-            .focused($isAnswerFocused)
-            .onSubmit {
-              clearAndDismiss()
+          if !(gameManager.gameState == .completed) {
+            TextField("Your answer", text: $userAnswer)
+              .textFieldStyle(RoundedBorderTextFieldStyle())
+              .keyboardType(.numberPad)
+              .frame(width: 200)
+              .focused($isAnswerFocused)
+              .onSubmit {
+                clearAndDismiss()
+              }
+            
+            Button("Submit Answer") {
+              if let answer = Int(userAnswer) {
+                clearAndDismiss()
+                showingResult = true
+                _ = gameManager.submitAnswer(answer)
+              }
             }
-          
-          Button("Submit Answer") {
-            if let answer = Int(userAnswer) {
-              clearAndDismiss()
-              showingResult = true
-              _ = gameManager.submitAnswer(answer)
-            }
+            .buttonStyle(.borderedProminent)
           }
-          .buttonStyle(.borderedProminent)
           
           if showingResult {
             if gameManager.isChallenger {
@@ -128,11 +144,13 @@ struct ContentView: View {
             } else {
               VStack {
                 if gameManager.gameState == .completed {
-                  Text("Game Over!")
-                    .font(.title)
-                  Text("Final Score:")
-                  Text("Challenger: \(gameManager.challengerScore)")
-                  Text("Opponent: \(gameManager.opponentScore)")
+                  Text("Your answer was \(gameManager.lastAnswerCorrect ? "correct!" : "wrong!")")
+                    .foregroundColor(gameManager.lastAnswerCorrect ? .green : .red)
+                    .padding(.bottom, 5)
+                  Text("Your friend got it \(gameManager.challengerCorrect ? "right" : "wrong")")
+                    .padding(.bottom)
+                    .foregroundColor(gameManager.challengerCorrect ? .green : .red)
+                  
                   Button("Share Back") {
                     showingShareSheet = true
                   }
@@ -140,6 +158,7 @@ struct ContentView: View {
                   .padding()
                 }
               }
+              .bold()
             }
           }
         }
@@ -176,12 +195,12 @@ struct ContentView: View {
   
   func constructShareMessage(for question: MathQuestion) -> String {
     if !gameManager.isChallenger {
-      let resultUrlString = "sawvival://result?first=\(question.firstNumber)&second=\(question.secondNumber)&operation=\(question.operation)&correct=\(gameManager.lastAnswerCorrect)&challenger_correct=\(gameManager.challengerScore == 1)"
+      let resultUrlString = "sawvival://result?first=\(question.firstNumber)&second=\(question.secondNumber)&operation=\(question.operation)&correct=\(gameManager.lastAnswerCorrect)&challenger_correct=\(gameManager.challengerCorrect)"
       let answerText = gameManager.lastAnswerCorrect ? "I got it right" : "I got it wrong"
       return "\(answerText)! Check both our answers here: \(resultUrlString)"
     } else {
-      let urlString = "sawvival://question?first=\(question.firstNumber)&second=\(question.secondNumber)&operation=\(question.operation)&deadline=\(Date().addingTimeInterval(60).timeIntervalSince1970)&challenger_correct=\(gameManager.lastAnswerCorrect)"
-      return "I \(gameManager.lastAnswerCorrect ? "solved it correctly" : "got it wrong")! Can you solve it?\n\(question.firstNumber) \(question.operation) \(question.secondNumber) = ?\n\nTry it here: \(urlString)"
+      let urlString = "sawvival://question?first=\(question.firstNumber)&second=\(question.secondNumber)&operation=\(question.operation)&deadline=\(Date().addingTimeInterval(60).timeIntervalSince1970)&challenger_correct=\(gameManager.challengerCorrect)"
+      return "I \(gameManager.challengerCorrect ? "solved it correctly" : "got it wrong")! Can you solve it?\n\(question.firstNumber) \(question.operation) \(question.secondNumber) = ?\n\nTry it here: \(urlString)"
     }
   }
   

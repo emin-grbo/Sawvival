@@ -2,8 +2,6 @@ import SwiftUI
 
 class GameManager: ObservableObject {
     @Published var currentQuestion: MathQuestion?
-    @Published var challengerScore: Int = 0
-    @Published var opponentScore: Int = 0
     @Published var isChallenger: Bool = true
     @Published var gameState: GameState = .waiting
     @Published var deadline: Date? = nil
@@ -22,13 +20,13 @@ class GameManager: ObservableObject {
     
     func startNewGame() {
         currentQuestion = MathQuestion.generateRandomQuestion()
-        challengerScore = 0
-        opponentScore = 0
         isChallenger = true
         gameState = .playing
         viewingResult = false
         deadline = nil
         hasExpired = false
+        challengerCorrect = false
+        lastAnswerCorrect = false
     }
     
     func handleSharedQuestion(first: Int, second: Int, operation: String, deadline: Date, challengerWasCorrect: Bool) {
@@ -56,9 +54,8 @@ class GameManager: ObservableObject {
         lastAnswerCorrect = isCorrect
         
         if isChallenger {
-            challengerScore = isCorrect ? 1 : 0
+            challengerCorrect = isCorrect
         } else {
-            opponentScore = isCorrect ? 1 : 0
             gameState = .completed
         }
         
@@ -70,7 +67,7 @@ class GameManager: ObservableObject {
         if Date() > deadline {
             hasExpired = true
             gameState = .expired
-            opponentScore = 0
+            lastAnswerCorrect = false
         }
     }
     
