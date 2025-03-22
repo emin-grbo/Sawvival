@@ -103,6 +103,13 @@ struct ContentView: View {
             .padding()
             .background(Color.red.opacity(0.2))
             .cornerRadius(8)
+            .bold()
+          
+          Button("Try Again") {
+            gameManager.startNewGame()
+          }
+          .buttonStyle(.borderedProminent)
+          
         } else if gameManager.gameState == .waiting {
           Button("Start New Game") {
             gameManager.startNewGame()
@@ -157,6 +164,7 @@ struct ContentView: View {
                   .buttonStyle(.bordered)
                   .padding()
                 }
+//                Spacer()
               }
               .bold()
             }
