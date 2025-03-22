@@ -10,7 +10,19 @@ struct MathQuestion {
         let operations = ["+", "-", "×"]
         let operation = operations.randomElement()!
         let first = Int.random(in: 1...20)
-        let second = Int.random(in: 1...20)
+        
+        // Adjust second number based on operation to prevent negative results
+        let second: Int
+        switch operation {
+        case "+":
+            second = Int.random(in: 1...20)
+        case "-":
+            second = Int.random(in: 1...first) // Ensure second number is not larger than first
+        case "×":
+            second = Int.random(in: 1...10)  // Smaller range for multiplication
+        default:
+            second = 1
+        }
         
         var answer: Int
         switch operation {
