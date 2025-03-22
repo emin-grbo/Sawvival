@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var userAnswer = ""
     @State private var showingShareSheet = false
     @State private var showingResult = false
+    @State private var currentTime = Date()
     
     // Add timer to update every second
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -23,12 +24,12 @@ struct ContentView: View {
     
     var timeRemaining: String {
         guard let deadline = gameManager.deadline else { return "" }
-        let diff = Calendar.current.dateComponents([.minute, .second], from: Date(), to: deadline)
+        let diff = Calendar.current.dateComponents([.minute, .second], from: currentTime, to: deadline)
         let totalSeconds = (diff.minute ?? 0) * 60 + (diff.second ?? 0)
         if totalSeconds <= 0 {
             return "Time's up!"
         }
-        return String(format: "%02d:%02d remaining", diff.minute ?? 0, diff.second ?? 0)
+        return String(format: "%02d:%02d", diff.minute ?? 0, diff.second ?? 0)
     }
     
     var body: some View {
@@ -43,8 +44,12 @@ struct ContentView: View {
                     .font(.headline)
                     .foregroundColor(gameManager.hasExpired ? .white : .blue)
                     .padding()
-                    .background(gameManager.hasExpired ? Color.red : Color.clear)
-                    .cornerRadius(8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(gameManager.hasExpired ? Color.red : Color.blue.opacity(0.2))
+                    )
+                    .scaleEffect(gameManager.hasExpired ? 1.1 : 1.0)
+                    .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: gameManager.hasExpired)
             }
             
             if gameManager.gameState == .expired {
@@ -103,9 +108,12 @@ struct ContentView: View {
             }
         }
         .padding()
-        .onReceive(timer) { _ in
-            if !gameManager.isChallenger {
-                gameManager.checkExpiration()
+        .onReceive(timer) { time in
+            currentTime = time
+            withAnimation {
+                if !gameManager.isChallenger {
+                    gameManager.checkExpiration()
+                }
             }
         }
         .sheet(isPresented: $showingShareSheet) {
